@@ -1,65 +1,141 @@
-import Image from "next/image";
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { TrackerList } from '../components/tracker-list'
+import { TrackerModal } from '../components/tracker-form'
+import { ProfileModal } from '../components/profile-modal'
+import { LogOut, Plus } from 'lucide-react'
+import { auth, db } from '@/utils/firebase/config'
+import { onAuthStateChanged, signOut, User } from 'firebase/auth'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null)
+  const [trackers, setTrackers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingTracker, setEditingTracker] = useState<any>(null)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        router.push('/login')
+      } else {
+        setUser(currentUser)
+      }
+      setLoading(false)
+    })
+    return () => unsubscribe()
+  }, [router])
+
+  useEffect(() => {
+    if (!user) {
+      setTrackers([])
+      return
+    }
+
+    const q = query(
+      collection(db, "trackers"),
+      where("user_id", "==", user.uid)
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const trackersData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      // Manual sort to avoid index requirement for now
+      trackersData.sort((a: any, b: any) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
+      setTrackers(trackersData)
+    })
+
+    return () => unsubscribe()
+  }, [user])
+
+  const handleLogout = async () => {
+    await signOut(auth)
+    router.push('/login')
+  }
+
+  const handleEdit = (tracker: any) => {
+    setEditingTracker(tracker)
+    setIsModalOpen(true)
+  }
+
+  const handleCopy = (tracker: any) => {
+    // Create a copy without the ID to trigger "Create" mode in modal
+    // but with pre-filled data
+    const { id, ...trackerData } = tracker
+    setEditingTracker(trackerData)
+    setIsModalOpen(true)
+  }
+
+  const handleCreate = () => {
+    setEditingTracker(null)
+    setIsModalOpen(true)
+  }
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
+  }
+
+  if (!user) return null
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen pb-20 p-4 max-w-md mx-auto relative">
+      {/* Header */}
+      <header className="flex justify-between items-center mb-8 pt-4">
+        <div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
+            AI Credit Tracker
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <div
+            onClick={() => setIsProfileOpen(true)}
+            className="flex items-center gap-2 mt-1 cursor-pointer group"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-md group-hover:scale-110 transition-transform">
+              {(user.displayName || user.email || '?')[0].toUpperCase()}
+            </div>
+            <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
+              {user.displayName || user.email}
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+        <button
+          onClick={handleLogout}
+          className="p-2 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 rounded-full transition-colors"
+        >
+          <LogOut size={20} />
+        </button>
+      </header>
+
+      {/* Tracker List */}
+      <TrackerList initialTrackers={trackers} onEdit={handleEdit} onCopy={handleCopy} />
+
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={handleCreate}
+          className="h-14 w-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+        >
+          <Plus size={24} />
+        </button>
+      </div>
+
+      <TrackerModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialData={editingTracker}
+      />
+
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={user}
+      />
+    </main>
+  )
 }
