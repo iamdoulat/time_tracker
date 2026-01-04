@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import { Outfit } from 'next/font/google'
 import './globals.css'
+import { RegisterSW } from '../components/register-sw'
 
 const outfit = Outfit({ subsets: ['latin'] })
 
@@ -19,7 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={outfit.className}>{children}</body>
+      <body className={outfit.className}>
+        {children}
+        <RegisterSW />
+      </body>
     </html>
   )
 }
