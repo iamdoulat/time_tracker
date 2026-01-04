@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { TrackerList } from '../components/tracker-list'
 import { TrackerModal } from '../components/tracker-form'
 import { ProfileModal } from '../components/profile-modal'
+import { TrackerSkeleton } from '../components/tracker-skeleton'
 import { LogOut, Plus } from 'lucide-react'
 import { auth, db } from '@/utils/firebase/config'
 import { onAuthStateChanged, signOut, User } from 'firebase/auth'
@@ -78,8 +79,23 @@ export default function Home() {
     setIsModalOpen(true)
   }
 
+  // ... existing imports
+
+  // ... inside Home component logic
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
+    return (
+      <main className="min-h-screen pb-20 p-4 max-w-md mx-auto relative">
+        <header className="flex justify-between items-center mb-8 pt-4">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-white/10 rounded animate-pulse"></div>
+            <div className="h-4 w-32 bg-white/10 rounded animate-pulse"></div>
+          </div>
+          <div className="h-10 w-10 rounded-full bg-white/10 animate-pulse"></div>
+        </header>
+        <TrackerSkeleton />
+      </main>
+    )
   }
 
   if (!user) return null
