@@ -31,6 +31,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.remove('light', 'dark')
         root.classList.add(theme)
         localStorage.setItem('theme', theme)
+
+        // Update theme-color meta tag for mobile status bar
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', theme === 'dark' ? '#18181b' : '#ffffff')
+        } else {
+            const meta = document.createElement('meta')
+            meta.name = 'theme-color'
+            meta.content = theme === 'dark' ? '#18181b' : '#ffffff'
+            document.head.appendChild(meta)
+        }
     }, [theme, mounted])
 
     const toggleTheme = () => {
