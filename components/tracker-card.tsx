@@ -183,10 +183,10 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
 
     return (
         <div className={cn(
-            "relative overflow-hidden rounded-2xl p-5 border transition-all duration-500 group select-none",
+            "relative overflow-hidden rounded-2xl p-6 border transition-all duration-500 group select-none",
             isAvailable
                 ? "bg-primary/5 border-primary/30 shadow-[0_0_30px_-10px_rgba(168,85,247,0.3)]"
-                : "bg-[#18181b] border-white/5 hover:border-white/10"
+                : "bg-card border-border hover:border-primary/30"
         )}>
             {/* Background Pipeline Progress Bar */}
             {!isAvailable && (
@@ -198,9 +198,9 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                 <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-primary/50 to-primary w-full origin-left transition-transform duration-1000 linear" style={{ transform: `scaleX(${progress / 100})` }} />
             )}
 
-            <div className="flex justify-between items-start mb-4 relative z-10">
-                <div className="max-w-[70%]">
-                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
+            <div className="flex justify-between items-start mb-6 relative z-10 gap-4">
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
                     {tracker.description && (
                         <div className="inline-block px-2 py-0.5 rounded-md bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-medium mb-2">
                             {tracker.description}
@@ -211,7 +211,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                         {format(target, 'MMM d, h:mm a')}
                     </p>
                 </div>
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex-shrink-0 flex flex-col items-end gap-2">
                     <div className={cn(
                         "px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border backdrop-blur-md",
                         isAvailable
@@ -285,7 +285,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                 ) : (
                     <div className="flex items-center gap-3 w-full">
                         <div className={cn(
-                            "h-10 w-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center relative",
+                            "h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center relative",
                             isPaused ? "text-yellow-400" : "text-primary"
                         )}>
                             {!isPaused && <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-20" />}
@@ -296,7 +296,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Time Left</p>
                                 <p className="text-[10px] text-primary/80 font-mono">{Math.floor(progress)}%</p>
                             </div>
-                            <p className="text-2xl font-mono text-white tracking-widest leading-none font-bold tabular-nums">
+                            <p className="text-2xl font-mono text-foreground tracking-widest leading-none font-bold tabular-nums">
                                 {timeLeft}
                             </p>
                         </div>
