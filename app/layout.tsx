@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: 'AI Credit Tracker',
   description: 'Premium PWA Credit Tracker',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+  },
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
 }
 
