@@ -7,11 +7,12 @@ import { TrackerModal } from '../components/tracker-form'
 import { ProfileModal } from '../components/profile-modal'
 import { TrackerSkeleton } from '../components/tracker-skeleton'
 import { StatisticsChart } from '../components/statistics-chart'
-import { LogOut, Plus, Search, X } from 'lucide-react'
+import { LogOut, Plus, Search, X, Sun, Moon } from 'lucide-react'
 import { auth, db } from '@/utils/firebase/config'
 import { onAuthStateChanged, signOut, User } from 'firebase/auth'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { cn } from '@/lib/utils'
+import { useTheme } from '../components/theme-provider'
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
@@ -22,6 +23,7 @@ export default function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const { theme, toggleTheme } = useTheme()
   const router = useRouter()
 
   useEffect(() => {
@@ -128,7 +130,7 @@ export default function Home() {
               autoFocus
               type="text"
               placeholder="Search trackers..."
-              className="w-full h-10 bg-white/5 border border-white/10 rounded-full pl-9 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+              className="w-full h-10 bg-card border border-border rounded-full pl-9 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-foreground"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -149,7 +151,7 @@ export default function Home() {
               "p-2 rounded-full transition-colors",
               isSearchOpen
                 ? "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
-                : "bg-white/5 text-muted-foreground hover:text-white hover:bg-white/10 border border-white/10"
+                : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border"
             )}
           >
             {isSearchOpen ? <X size={20} /> : <Search size={20} />}
@@ -157,8 +159,17 @@ export default function Home() {
 
           {!isSearchOpen && (
             <button
+              onClick={toggleTheme}
+              className="p-2 bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-full transition-colors"
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+          )}
+
+          {!isSearchOpen && (
+            <button
               onClick={handleLogout}
-              className="p-2 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 rounded-full transition-colors"
+              className="p-2 bg-card text-muted-foreground border border-border hover:bg-muted rounded-full transition-colors"
             >
               <LogOut size={20} />
             </button>

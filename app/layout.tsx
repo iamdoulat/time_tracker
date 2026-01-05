@@ -4,6 +4,8 @@ import { Outfit } from 'next/font/google'
 import './globals.css'
 import { RegisterSW } from '../components/register-sw'
 
+import { ThemeProvider } from '../components/theme-provider'
+
 const outfit = Outfit({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -19,10 +21,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={outfit.className} suppressHydrationWarning>
-        {children}
-        <RegisterSW />
+        <ThemeProvider>
+          {children}
+          <RegisterSW />
+        </ThemeProvider>
       </body>
     </html>
   )

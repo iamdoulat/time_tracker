@@ -60,10 +60,10 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
     ]
 
     return (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 backdrop-blur-sm">
+        <div className="bg-card border border-border rounded-2xl p-4 mb-6 backdrop-blur-sm shadow-sm transition-colors">
             <h2 className="text-sm font-medium text-muted-foreground mb-4 flex justify-between items-center">
                 <span>Overview</span>
-                <span className="text-xs bg-white/10 px-2 py-1 rounded-full text-white">{trackers.length} Total</span>
+                <span className="text-xs bg-muted border border-border px-2 py-1 rounded-full text-foreground transition-colors">{trackers.length} Total</span>
             </h2>
 
             <div className="flex items-end justify-between gap-2 h-32">
@@ -76,7 +76,7 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
                         </div>
 
                         {/* Bar */}
-                        <div className="w-full bg-white/5 rounded-t-lg h-full relative overflow-hidden flex items-end">
+                        <div className="w-full bg-muted border-x border-t border-border rounded-t-lg h-full relative overflow-hidden flex items-end transition-colors">
                             <motion.div
                                 initial={{ height: 0 }}
                                 animate={{ height: `${(bar.value / stats.max) * 100}%` }}

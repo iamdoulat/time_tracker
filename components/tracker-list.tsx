@@ -78,7 +78,7 @@ export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' 
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex p-1 bg-white/5 rounded-xl border border-white/10 sticky top-0 z-40 backdrop-blur-md">
+            <div className="flex p-1 bg-card rounded-xl border border-border sticky top-0 z-40 backdrop-blur-md shadow-sm transition-colors">
                 {TABS.map((f) => (
                     <button
                         key={f}
