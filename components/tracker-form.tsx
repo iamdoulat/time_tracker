@@ -59,7 +59,7 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
         const targetTimestamp = new Date(`${date}T${time}`)
 
         try {
-            if (initialData) {
+            if (initialData?.id) {
                 // Update existing
                 await updateDoc(doc(db, "trackers", initialData.id), {
                     title,

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Clock, CheckCircle2, Timer, Pencil, Copy } from 'lucide-react'
+import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '@/utils/firebase/config'
 
 type Tracker = {
     id: string
@@ -12,6 +14,9 @@ type Tracker = {
     target_timestamp: string
     status: string
     created_at: string
+    paused?: boolean
+    paused_at?: string
+    accumulated_time?: number
 }
 
 export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onEdit?: (tracker: Tracker) => void; onCopy?: (tracker: Tracker) => void }) {
@@ -21,9 +26,73 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
     const [timeLeft, setTimeLeft] = useState('')
     const [isAvailable, setIsAvailable] = useState(false)
     const [progress, setProgress] = useState(0)
+    const [isPaused, setIsPaused] = useState(tracker.paused || false)
+
+    useEffect(() => {
+        setIsPaused(tracker.paused || false)
+    }, [tracker.paused])
+
+    const togglePause = async () => {
+        try {
+            const newPausedState = !isPaused
+            const now = new Date()
+
+            if (newPausedState) {
+                // Pausing: store current time and accumulated time
+                const elapsed = now.getTime() - start.getTime()
+                await updateDoc(doc(db, 'trackers', tracker.id), {
+                    paused: true,
+                    paused_at: now.toISOString(),
+                    accumulated_time: tracker.accumulated_time || elapsed
+                })
+            } else {
+                // Resuming: calculate new target timestamp
+                const pausedAt = new Date(tracker.paused_at || now)
+                const pauseDuration = now.getTime() - pausedAt.getTime()
+                const newTarget = new Date(target.getTime() + pauseDuration)
+
+                await updateDoc(doc(db, 'trackers', tracker.id), {
+                    paused: false,
+                    target_timestamp: newTarget.toISOString(),
+                    paused_at: null
+                })
+            }
+        } catch (error) {
+            console.error('Error toggling pause:', error)
+        }
+    }
 
     useEffect(() => {
         const update = () => {
+            if (isPaused) {
+                // When paused, show frozen time
+                const pausedAt = tracker.paused_at ? new Date(tracker.paused_at) : new Date()
+                const totalDuration = target.getTime() - start.getTime()
+                const elapsed = pausedAt.getTime() - start.getTime()
+                const remaining = target.getTime() - pausedAt.getTime()
+
+                if (remaining <= 0) {
+                    setIsAvailable(true)
+                    setTimeLeft('Completed')
+                    setProgress(100)
+                } else {
+                    setIsAvailable(false)
+                    const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
+                    setProgress(percent)
+
+                    const d = Math.floor(remaining / (1000 * 60 * 60 * 24))
+                    const h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+                    const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60))
+                    const s = Math.floor((remaining % (1000 * 60)) / 1000)
+
+                    const parts = []
+                    if (d > 0) parts.push(`${d}d`)
+                    parts.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`)
+                    setTimeLeft(parts.join(' '))
+                }
+                return
+            }
+
             const now = new Date()
             const totalDuration = target.getTime() - start.getTime()
             const elapsed = now.getTime() - start.getTime()
@@ -57,7 +126,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
         update() // run immediately
         const interval = setInterval(update, 1000)
         return () => clearInterval(interval)
-    }, [target, start])
+    }, [target, start, isPaused, tracker.paused_at])
 
     return (
         <div className={cn(
@@ -99,6 +168,22 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                         {isAvailable ? 'Available' : 'Progress'}
                     </div>
                     <div className="flex items-center gap-2">
+                        {!isAvailable && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    togglePause();
+                                }}
+                                className={cn(
+                                    "p-2 rounded-full transition-colors",
+                                    isPaused
+                                        ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20"
+                                        : "bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20"
+                                )}
+                            >
+                                {isPaused ? <Play size={14} /> : <Pause size={14} />}
+                            </button>
+                        )}
                         {onCopy && (
                             <button
                                 onClick={(e) => {
@@ -135,8 +220,11 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     </div>
                 ) : (
                     <div className="flex items-center gap-3 w-full">
-                        <div className="h-10 w-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-primary relative">
-                            <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-20" />
+                        <div className={cn(
+                            "h-10 w-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center relative",
+                            isPaused ? "text-yellow-400" : "text-primary"
+                        )}>
+                            {!isPaused && <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-20" />}
                             <Timer size={20} />
                         </div>
                         <div className="flex-1">

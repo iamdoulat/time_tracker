@@ -61,7 +61,7 @@ export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' 
 
     const handleSwipe = (event: Event, info: PanInfo) => {
         const threshold = 50
-        const currentIndex = TABS.indexOf(filter)
+        const currentIndex = (TABS || []).indexOf(filter)
 
         if (info.offset.x < -threshold) {
             // Swipe Left -> Next Tab
