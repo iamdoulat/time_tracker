@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={outfit.className}>
+      <body className={outfit.className} suppressHydrationWarning>
         {children}
         <RegisterSW />
       </body>

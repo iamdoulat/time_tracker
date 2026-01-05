@@ -2,10 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play } from 'lucide-react'
+import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { doc, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/utils/firebase/config'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const MySwal = withReactContent(Swal)
 
 type Tracker = {
     id: string
@@ -59,6 +63,47 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             }
         } catch (error) {
             console.error('Error toggling pause:', error)
+        }
+    }
+
+    const handleDelete = async () => {
+        const result = await MySwal.fire({
+            title: 'Are you sure?',
+            text: 'This tracker will be permanently deleted.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, keep it',
+            background: '#18181b',
+            color: '#ffffff',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#3f3f46',
+            iconColor: '#ef4444'
+        })
+
+        if (result.isConfirmed) {
+            try {
+                await deleteDoc(doc(db, 'trackers', tracker.id))
+                MySwal.fire({
+                    title: 'Deleted!',
+                    text: 'Tracker has been deleted.',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    background: '#18181b',
+                    color: '#ffffff',
+                    iconColor: '#22c55e'
+                })
+            } catch (error) {
+                console.error('Error deleting tracker:', error)
+                MySwal.fire({
+                    title: 'Error!',
+                    text: 'Failed to delete tracker.',
+                    icon: 'error',
+                    background: '#18181b',
+                    color: '#ffffff'
+                })
+            }
         }
     }
 
@@ -206,6 +251,15 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                 <Pencil size={14} />
                             </button>
                         )}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete();
+                            }}
+                            className="p-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-full transition-colors"
+                        >
+                            <Trash2 size={14} />
+                        </button>
                     </div>
                 </div>
             </div>
