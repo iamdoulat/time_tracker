@@ -19,7 +19,7 @@ type Tracker = {
 const TABS = ['all', 'progress', 'available'] as const
 const ITEMS_PER_PAGE = 10
 
-export function TrackerList({ initialTrackers, onEdit, onCopy }: { initialTrackers: any[]; onEdit: (tracker: any) => void; onCopy: (tracker: any) => void }) {
+export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' }: { initialTrackers: any[]; onEdit: (tracker: any) => void; onCopy: (tracker: any) => void; searchQuery?: string }) {
     const [filter, setFilter] = useState<typeof TABS[number]>('all')
     const [currentTime, setCurrentTime] = useState(new Date())
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
@@ -33,7 +33,7 @@ export function TrackerList({ initialTrackers, onEdit, onCopy }: { initialTracke
     useEffect(() => {
         // Reset pagination when filter changes
         setVisibleCount(ITEMS_PER_PAGE)
-    }, [filter])
+    }, [filter, searchQuery])
 
     const filteredTrackers = useMemo(() => {
         return initialTrackers.filter(t => {
@@ -41,10 +41,15 @@ export function TrackerList({ initialTrackers, onEdit, onCopy }: { initialTracke
             const isAvailable = currentTime >= target
             const computedStatus = isAvailable ? 'available' : 'progress'
 
+            // Filter by search query
+            if (searchQuery && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) {
+                return false
+            }
+
             if (filter === 'all') return true
             return computedStatus === filter
         })
-    }, [initialTrackers, filter, currentTime])
+    }, [initialTrackers, filter, currentTime, searchQuery])
 
     const sortedTrackers = useMemo(() => {
         return [...filteredTrackers].sort((a, b) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
