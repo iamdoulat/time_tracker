@@ -28,6 +28,7 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
     const [description, setDescription] = useState('')
     const [date, setDate] = useState('')
     const [time, setTime] = useState('')
+    const [status, setStatus] = useState('Progress')
 
     useEffect(() => {
         if (initialData) {
@@ -36,11 +37,13 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
             const target = new Date(initialData.target_timestamp)
             setDate(format(target, 'yyyy-MM-dd'))
             setTime(format(target, 'HH:mm'))
+            setStatus(initialData.status || 'Progress')
         } else {
             setTitle('')
             setDescription('')
             setDate('')
             setTime('')
+            setStatus('Progress')
         }
     }, [initialData, isOpen])
 
@@ -65,6 +68,7 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
                     title,
                     description: description || null,
                     target_timestamp: targetTimestamp.toISOString(),
+                    status,
                 })
                 MySwal.fire({ title: 'Updated!', text: 'Tracker updated successfully', icon: 'success', timer: 1500, showConfirmButton: false, background: '#18181b', color: '#ffffff', iconColor: '#7c3aed' })
             } else {
@@ -73,7 +77,7 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
                     title,
                     description: description || null,
                     target_timestamp: targetTimestamp.toISOString(),
-                    status: 'Progress',
+                    status,
                     user_id: user.uid,
                     created_at: new Date().toISOString()
                 })
@@ -127,6 +131,19 @@ export function TrackerModal({ isOpen, onClose, initialData }: TrackerModalProps
                                     placeholder="Project Deadline"
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 text-white placeholder:text-white/20"
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground ml-1">Status</label>
+                                <select
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary/50 text-white appearance-none cursor-pointer"
+                                >
+                                    <option value="Not Started" className="bg-[#121214]">Not Started</option>
+                                    <option value="Progress" className="bg-[#121214]">In Progress</option>
+                                    <option value="Available" className="bg-[#121214]">Available</option>
+                                </select>
                             </div>
 
                             <div className="space-y-2">

@@ -16,7 +16,7 @@ type Tracker = {
     created_at: string
 }
 
-const TABS = ['all', 'progress', 'available'] as const
+const TABS = ['all', 'not started', 'progress', 'available'] as const
 const ITEMS_PER_PAGE = 10
 
 export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' }: { initialTrackers: any[]; onEdit: (tracker: any) => void; onCopy: (tracker: any) => void; searchQuery?: string }) {
@@ -39,7 +39,17 @@ export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' 
         return initialTrackers.filter(t => {
             const target = new Date(t.target_timestamp)
             const isAvailable = currentTime >= target
-            const computedStatus = isAvailable ? 'available' : 'progress'
+
+            // Map Firestore status to tab names
+            // 'Not Started' -> 'not started'
+            // 'Progress' -> 'progress'
+            // 'Available' -> 'available'
+            const dbStatus = (t.status || 'Progress').toLowerCase()
+
+            // If the status is 'Available' manually, we treat it as available
+            // Otherwise, we can still use time-based logic if desired, 
+            // but let's prioritize the DB status if it's explicitly set.
+            const computedStatus = isAvailable ? 'available' : dbStatus
 
             // Filter by search query
             if (searchQuery && !t.title.toLowerCase().includes(searchQuery.toLowerCase())) {

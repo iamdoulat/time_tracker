@@ -116,10 +116,14 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                 const elapsed = pausedAt.getTime() - start.getTime()
                 const remaining = target.getTime() - pausedAt.getTime()
 
-                if (remaining <= 0) {
+                if (tracker.status === 'Available' || remaining <= 0) {
                     setIsAvailable(true)
                     setTimeLeft('Completed')
                     setProgress(100)
+                } else if (tracker.status === 'Not Started') {
+                    setIsAvailable(false)
+                    setTimeLeft('Not Started')
+                    setProgress(0)
                 } else {
                     setIsAvailable(false)
                     const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
@@ -143,10 +147,14 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             const elapsed = now.getTime() - start.getTime()
             const remaining = target.getTime() - now.getTime()
 
-            if (remaining <= 0) {
+            if (tracker.status === 'Available' || remaining <= 0) {
                 setIsAvailable(true)
                 setTimeLeft('Completed')
                 setProgress(100)
+            } else if (tracker.status === 'Not Started') {
+                setIsAvailable(false)
+                setTimeLeft('Not Started')
+                setProgress(0)
             } else {
                 setIsAvailable(false)
 
@@ -208,9 +216,11 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                         "px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border backdrop-blur-md",
                         isAvailable
                             ? "bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_10px_-4px_rgba(74,222,128,0.5)]"
-                            : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            : (tracker.status === 'Not Started'
+                                ? "bg-gray-500/10 text-gray-400 border-gray-500/20"
+                                : "bg-blue-500/10 text-blue-400 border-blue-500/20")
                     )}>
-                        {isAvailable ? 'Available' : 'Progress'}
+                        {isAvailable ? 'Available' : (tracker.status === 'Not Started' ? 'Not Started' : 'Progress')}
                     </div>
                     <div className="flex items-center gap-2">
                         {!isAvailable && (
