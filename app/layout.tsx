@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Outfit } from 'next/font/google'
 import './globals.css'
 import { RegisterSW } from '../components/register-sw'
-
+import { Preloader } from '../components/preloader'
 import { ThemeProvider } from '../components/theme-provider'
 
 const outfit = Outfit({ subsets: ['latin'] })
@@ -45,6 +45,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={outfit.className} suppressHydrationWarning>
         <ThemeProvider>
+          <Preloader />
           {children}
           <RegisterSW />
         </ThemeProvider>

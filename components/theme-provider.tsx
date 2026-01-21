@@ -8,6 +8,8 @@ type Theme = 'light' | 'dark'
 type ThemeContextType = {
     theme: Theme
     toggleTheme: () => void
+    isAppLoaded: boolean
+    setIsAppLoaded: (loaded: boolean) => void
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
@@ -15,6 +17,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>('dark')
     const [mounted, setMounted] = useState(false)
+    const [isAppLoaded, setIsAppLoaded] = useState(false)
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as Theme | null
@@ -33,13 +36,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('theme', theme)
 
         // Update theme-color meta tag for mobile status bar
+        const themeColor = theme === 'dark' ? '#000000' : '#ffffff'
         const metaThemeColor = document.querySelector('meta[name="theme-color"]')
         if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', theme === 'dark' ? '#18181b' : '#ffffff')
+            metaThemeColor.setAttribute('content', themeColor)
         } else {
             const meta = document.createElement('meta')
             meta.name = 'theme-color'
-            meta.content = theme === 'dark' ? '#18181b' : '#ffffff'
+            meta.content = themeColor
+            document.head.appendChild(meta)
+        }
+
+        // Specifically for iOS status bar
+        const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+        if (metaStatusBarStyle) {
+            metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black' : 'default')
+        } else {
+            const meta = document.createElement('meta')
+            meta.name = 'apple-mobile-web-app-status-bar-style'
+            meta.content = theme === 'dark' ? 'black' : 'default'
             document.head.appendChild(meta)
         }
     }, [theme, mounted])
@@ -50,7 +65,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme, isAppLoaded, setIsAppLoaded }}>
             {children}
         </ThemeContext.Provider>
     )

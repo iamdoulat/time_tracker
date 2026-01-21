@@ -45,14 +45,14 @@
 
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(240 10% 3.9%);
-  --color-card: hsl(0 0% 98%);
+  --color-card: hsl(0 0% 100%);
   --color-card-foreground: hsl(240 10% 3.9%);
   --color-popover: hsl(0 0% 100%);
   --color-popover-foreground: hsl(240 10% 3.9%);
   --color-muted: hsl(240 4.8% 95.9%);
   --color-muted-foreground: hsl(240 3.8% 46.1%);
-  --color-border: hsl(240 5.9% 10%);
-  --color-input: hsl(240 5.9% 10%);
+  --color-border: hsl(240 5.9% 90%);
+  --color-input: hsl(240 5.9% 90%);
 }
 
 .dark {
@@ -76,8 +76,23 @@
     @apply border-border;
   }
 
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Mobile-optimized touch targets */
+  @media (max-width: 768px) {
+
+    button,
+    a {
+      min-height: 44px;
+      min-width: 44px;
+    }
   }
 }
 
@@ -111,5 +126,29 @@
 
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  /* Mobile-specific utilities */
+  @media (max-width: 640px) {
+    .mobile-px-safe {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
   }
 }

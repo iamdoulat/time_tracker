@@ -67,6 +67,8 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
     }
 
     const handleDelete = async () => {
+        const isDark = document.documentElement.classList.contains('dark')
+
         const result = await MySwal.fire({
             title: 'Are you sure?',
             text: 'This tracker will be permanently deleted.',
@@ -74,10 +76,10 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             showCancelButton: true,
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'No, keep it',
-            background: '#18181b',
-            color: '#ffffff',
+            background: isDark ? '#18181b' : '#ffffff',
+            color: isDark ? '#ffffff' : '#09090b',
             confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#3f3f46',
+            cancelButtonColor: isDark ? '#3f3f46' : '#e4e4e7',
             iconColor: '#ef4444'
         })
 
@@ -90,8 +92,8 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     icon: 'success',
                     timer: 1500,
                     showConfirmButton: false,
-                    background: '#18181b',
-                    color: '#ffffff',
+                    background: isDark ? '#18181b' : '#ffffff',
+                    color: isDark ? '#ffffff' : '#09090b',
                     iconColor: '#22c55e'
                 })
             } catch (error) {
@@ -100,8 +102,8 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     title: 'Error!',
                     text: 'Failed to delete tracker.',
                     icon: 'error',
-                    background: '#18181b',
-                    color: '#ffffff'
+                    background: isDark ? '#18181b' : '#ffffff',
+                    color: isDark ? '#ffffff' : '#09090b'
                 })
             }
         }
@@ -200,14 +202,14 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
 
             <div className="flex justify-between items-start mb-6 relative z-10 gap-4">
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground dark:text-foreground mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
                     {tracker.description && (
-                        <div className="inline-block px-2 py-0.5 rounded-md bg-green-500/10 text-green-400 border border-green-500/20 text-xs font-medium mb-2">
+                        <div className="inline-block px-2 py-0.5 rounded-md bg-green-500/20 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/40 dark:border-green-500/20 text-xs font-semibold mb-2">
                             {tracker.description}
                         </div>
                     )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock size={12} />
+                    <p className="text-xs text-gray-600 dark:text-muted-foreground flex items-center gap-1">
+                        <Clock size={12} className="text-gray-500 dark:text-muted-foreground" />
                         {format(target, 'MMM d, h:mm a')}
                     </p>
                 </div>
@@ -215,10 +217,10 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     <div className={cn(
                         "px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border backdrop-blur-md",
                         isAvailable
-                            ? "bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_10px_-4px_rgba(74,222,128,0.5)]"
+                            ? "bg-green-500/20 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/40 dark:border-green-500/20 shadow-[0_0_10px_-4px_rgba(74,222,128,0.5)]"
                             : (tracker.status === 'Not Started'
-                                ? "bg-gray-500/10 text-gray-400 border-gray-500/20"
-                                : "bg-blue-500/10 text-blue-400 border-blue-500/20")
+                                ? "bg-gray-500/20 dark:bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/40 dark:border-gray-500/20"
+                                : "bg-blue-500/20 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/40 dark:border-blue-500/20")
                     )}>
                         {isAvailable ? 'Available' : (tracker.status === 'Not Started' ? 'Not Started' : 'Progress')}
                     </div>
@@ -230,10 +232,10 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                     togglePause();
                                 }}
                                 className={cn(
-                                    "p-2 rounded-full transition-colors",
+                                    "p-2 rounded-full transition-colors flex items-center justify-center",
                                     isPaused
-                                        ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20"
-                                        : "bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20"
+                                        ? "bg-yellow-500/20 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/40 dark:border-yellow-500/20 hover:bg-yellow-500/30 dark:hover:bg-yellow-500/20"
+                                        : "bg-purple-500/20 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/40 dark:border-purple-500/20 hover:bg-purple-500/30 dark:hover:bg-purple-500/20"
                                 )}
                             >
                                 {isPaused ? <Play size={14} /> : <Pause size={14} />}
@@ -245,7 +247,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                     e.stopPropagation();
                                     onCopy(tracker);
                                 }}
-                                className="p-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 rounded-full transition-colors"
+                                className="p-2 bg-blue-500/20 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/40 dark:border-blue-500/20 hover:bg-blue-500/30 dark:hover:bg-blue-500/20 rounded-full transition-colors flex items-center justify-center"
                             >
                                 <Copy size={14} />
                             </button>
@@ -256,7 +258,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                     e.stopPropagation();
                                     onEdit(tracker);
                                 }}
-                                className="p-2 bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/20 rounded-full transition-colors"
+                                className="p-2 bg-green-500/20 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/40 dark:border-green-500/20 hover:bg-green-500/30 dark:hover:bg-green-500/20 rounded-full transition-colors flex items-center justify-center"
                             >
                                 <Pencil size={14} />
                             </button>
@@ -266,7 +268,7 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                 e.stopPropagation();
                                 handleDelete();
                             }}
-                            className="p-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-full transition-colors"
+                            className="p-2 bg-red-500/20 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/40 dark:border-red-500/20 hover:bg-red-500/30 dark:hover:bg-red-500/20 rounded-full transition-colors flex items-center justify-center"
                         >
                             <Trash2 size={14} />
                         </button>
@@ -276,8 +278,8 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
 
             <div className="flex items-center gap-4 relative z-10">
                 {isAvailable ? (
-                    <div className="flex items-center gap-2 text-green-400 w-full p-2 bg-green-500/5 rounded-xl border border-green-500/10">
-                        <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 w-full p-2 bg-green-500/10 dark:bg-green-500/5 rounded-xl border border-green-500/30 dark:border-green-500/10">
+                        <div className="h-8 w-8 rounded-full bg-green-500/30 dark:bg-green-500/20 flex items-center justify-center">
                             <CheckCircle2 size={16} />
                         </div>
                         <span className="font-semibold text-sm">Ready to Claim</span>
@@ -286,17 +288,17 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     <div className="flex items-center gap-3 w-full">
                         <div className={cn(
                             "h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center relative",
-                            isPaused ? "text-yellow-400" : "text-primary"
+                            isPaused ? "text-yellow-600 dark:text-yellow-400" : "text-primary"
                         )}>
                             {!isPaused && <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-20" />}
                             <Timer size={20} />
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-end mb-1">
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Time Left</p>
-                                <p className="text-[10px] text-primary/80 font-mono">{Math.floor(progress)}%</p>
+                                <p className="text-[10px] text-gray-600 dark:text-muted-foreground uppercase tracking-widest">Time Left</p>
+                                <p className="text-[10px] text-primary/90 dark:text-primary/80 font-mono">{Math.floor(progress)}%</p>
                             </div>
-                            <p className="text-2xl font-mono text-foreground tracking-widest leading-none font-bold tabular-nums">
+                            <p className="text-2xl font-mono text-gray-900 dark:text-foreground tracking-widest leading-none font-bold tabular-nums">
                                 {timeLeft}
                             </p>
                         </div>
