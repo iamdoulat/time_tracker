@@ -112,7 +112,7 @@ export function TrackerList({
         <div className="flex flex-col gap-6">
 
             <motion.div
-                className="flex flex-col gap-4 pb-24 min-h-[50vh]"
+                className="flex flex-col gap-4 pb-6 min-h-[50vh]"
                 onPanEnd={handleSwipe}
                 style={{ touchAction: 'pan-y' }} // Allow vertical scroll, handle horizontal swipe
             >

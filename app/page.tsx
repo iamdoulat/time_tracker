@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { TrackerList, TABS, TabType } from '../components/tracker-list'
 import { TrackerModal } from '../components/tracker-form'
@@ -32,7 +32,6 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    // Minimum splash screen time of 2 seconds
     const timer = setTimeout(() => {
       setShowSplash(false)
     }, 2000)
@@ -43,9 +42,6 @@ export default function Home() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (!currentUser) {
-        // Delay redirect slightly to show splash if needed, but usually we want to redirect
-        // However, with custom splash, we might want to wait for splash logic.
-        // For now, let's keep the user null until redirect to avoid flash.
         router.push('/login')
       } else {
         setUser(currentUser)
@@ -70,37 +66,35 @@ export default function Home() {
       const trackersData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }))
-      // Manual sort to avoid index requirement for now
-      trackersData.sort((a: any, b: any) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
+      })) as any[]
+
+      trackersData.sort((a, b) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
       setTrackers(trackersData)
     })
 
     return () => unsubscribe()
-  }, [user])
+  }, [user?.uid]) // Use user.uid for more stable effect
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await signOut(auth)
     router.push('/login')
-  }
+  }, [router])
 
-  const handleEdit = (tracker: any) => {
+  const handleEdit = useCallback((tracker: any) => {
     setEditingTracker(tracker)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCopy = (tracker: any) => {
-    // Create a copy without the ID to trigger "Create" mode in modal
-    // but with pre-filled data
+  const handleCopy = useCallback((tracker: any) => {
     const { id, ...trackerData } = tracker
     setEditingTracker(trackerData)
     setIsModalOpen(true)
-  }
+  }, [])
 
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     setEditingTracker(null)
     setIsModalOpen(true)
-  }
+  }, [])
 
 
   return (
@@ -116,7 +110,7 @@ export default function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <main className="min-h-screen pb-20 px-3 sm:px-4 max-w-md mx-auto relative mobile-px-safe">
+            <main className="min-h-screen pb-9 px-3 sm:px-4 max-w-md mx-auto relative mobile-px-safe">
               {/* Header */}
               {/* Sticky Header */}
               <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md pt-3 sm:pt-4 pb-2 px-1">

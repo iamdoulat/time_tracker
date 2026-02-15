@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo, useCallback } from 'react'
 import { format } from 'date-fns'
 import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play, Trash2, Pin } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -11,7 +11,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-type Tracker = {
+export type Tracker = {
     id: string
     title: string
     description?: string
@@ -24,7 +24,15 @@ type Tracker = {
     is_sticky?: boolean
 }
 
-export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onEdit?: (tracker: Tracker) => void; onCopy?: (tracker: Tracker) => void }) {
+export const TrackerCard = memo(function TrackerCard({
+    tracker,
+    onEdit,
+    onCopy
+}: {
+    tracker: Tracker;
+    onEdit?: (tracker: Tracker) => void;
+    onCopy?: (tracker: Tracker) => void
+}) {
     const target = useMemo(() => new Date(tracker.target_timestamp), [tracker.target_timestamp])
     const start = useMemo(() => new Date(tracker.created_at), [tracker.created_at])
 
@@ -37,13 +45,12 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
         setIsPaused(tracker.paused || false)
     }, [tracker.paused])
 
-    const togglePause = async () => {
+    const togglePause = useCallback(async () => {
         try {
             const newPausedState = !isPaused
             const now = new Date()
 
             if (newPausedState) {
-                // Pausing: store current time and accumulated time
                 const elapsed = now.getTime() - start.getTime()
                 await updateDoc(doc(db, 'trackers', tracker.id), {
                     paused: true,
@@ -51,7 +58,6 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                     accumulated_time: tracker.accumulated_time || elapsed
                 })
             } else {
-                // Resuming: calculate new target timestamp
                 const pausedAt = new Date(tracker.paused_at || now)
                 const pauseDuration = now.getTime() - pausedAt.getTime()
                 const newTarget = new Date(target.getTime() + pauseDuration)
@@ -65,9 +71,9 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
         } catch (error) {
             console.error('Error toggling pause:', error)
         }
-    }
+    }, [isPaused, start, target, tracker.id, tracker.paused_at, tracker.accumulated_time])
 
-    const toggleSticky = async () => {
+    const toggleSticky = useCallback(async () => {
         try {
             await updateDoc(doc(db, 'trackers', tracker.id), {
                 is_sticky: !tracker.is_sticky
@@ -75,9 +81,9 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
         } catch (error) {
             console.error('Error toggling sticky:', error)
         }
-    }
+    }, [tracker.id, tracker.is_sticky])
 
-    const handleDelete = async () => {
+    const handleDelete = useCallback(async () => {
         const isDark = document.documentElement.classList.contains('dark')
 
         const result = await MySwal.fire({
@@ -118,12 +124,11 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                 })
             }
         }
-    }
+    }, [tracker.id])
 
     useEffect(() => {
         const update = () => {
             if (isPaused) {
-                // When paused, show frozen time
                 const pausedAt = tracker.paused_at ? new Date(tracker.paused_at) : new Date()
                 const totalDuration = target.getTime() - start.getTime()
                 const elapsed = pausedAt.getTime() - start.getTime()
@@ -170,12 +175,9 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                 setProgress(0)
             } else {
                 setIsAvailable(false)
-
-                // Progress percentage for the bar
                 const percent = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
                 setProgress(percent)
 
-                // Count down string
                 const d = Math.floor(remaining / (1000 * 60 * 60 * 24))
                 const h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
                 const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60))
@@ -189,10 +191,10 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             }
         }
 
-        update() // run immediately
+        update()
         const interval = setInterval(update, 1000)
         return () => clearInterval(interval)
-    }, [target, start, isPaused, tracker.paused_at])
+    }, [target, start, isPaused, tracker.paused_at, tracker.status])
 
     return (
         <div className={cn(
@@ -332,4 +334,4 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             </div>
         </div>
     )
-}
+})
