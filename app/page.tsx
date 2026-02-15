@@ -62,15 +62,24 @@ export default function Home() {
       where("user_id", "==", user.uid)
     )
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const trackersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as any[]
+    const unsubscribe = onSnapshot(q,
+      (snapshot) => {
+        const trackersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as any[]
 
-      trackersData.sort((a, b) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
-      setTrackers(trackersData)
-    })
+        trackersData.sort((a, b) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
+        setTrackers(trackersData)
+      },
+      (error) => {
+        if (error.code === 'permission-denied') {
+          console.warn('Firestore: Permission denied (expected during logout/transition)')
+        } else {
+          console.error('Firestore Error:', error)
+        }
+      }
+    )
 
     return () => unsubscribe()
   }, [user?.uid]) // Use user.uid for more stable effect
