@@ -113,7 +113,7 @@ export default function Home() {
             <main className="min-h-screen pb-9 px-3 sm:px-4 max-w-md mx-auto relative mobile-px-safe">
               {/* Header */}
               {/* Sticky Header */}
-              <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md pt-3 sm:pt-4 pb-2 px-1">
+              <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md pt-0 pb-2 px-1">
                 <header className="flex justify-between items-center gap-2">
                   {!isSearchOpen ? (
                     <div className="flex-1 min-w-0">
