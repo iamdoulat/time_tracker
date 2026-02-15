@@ -34,29 +34,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         root.classList.remove('light', 'dark')
         root.classList.add(theme)
         localStorage.setItem('theme', theme)
-
-        // Update theme-color meta tag for mobile status bar
-        const themeColor = theme === 'dark' ? '#000000' : '#ffffff'
-        const metaThemeColor = document.querySelector('meta[name="theme-color"]')
-        if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', themeColor)
-        } else {
-            const meta = document.createElement('meta')
-            meta.name = 'theme-color'
-            meta.content = themeColor
-            document.head.appendChild(meta)
-        }
-
-        // Specifically for iOS status bar
-        const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
-        if (metaStatusBarStyle) {
-            metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black' : 'default')
-        } else {
-            const meta = document.createElement('meta')
-            meta.name = 'apple-mobile-web-app-status-bar-style'
-            meta.content = theme === 'dark' ? 'black' : 'default'
-            document.head.appendChild(meta)
-        }
     }, [theme, mounted])
 
     const toggleTheme = () => {
