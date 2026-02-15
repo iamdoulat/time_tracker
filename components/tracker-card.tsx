@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { format } from 'date-fns'
-import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play, Trash2 } from 'lucide-react'
+import { Clock, CheckCircle2, Timer, Pencil, Copy, Pause, Play, Trash2, Pin } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/utils/firebase/config'
@@ -21,6 +21,7 @@ type Tracker = {
     paused?: boolean
     paused_at?: string
     accumulated_time?: number
+    is_sticky?: boolean
 }
 
 export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onEdit?: (tracker: Tracker) => void; onCopy?: (tracker: Tracker) => void }) {
@@ -63,6 +64,16 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
             }
         } catch (error) {
             console.error('Error toggling pause:', error)
+        }
+    }
+
+    const toggleSticky = async () => {
+        try {
+            await updateDoc(doc(db, 'trackers', tracker.id), {
+                is_sticky: !tracker.is_sticky
+            })
+        } catch (error) {
+            console.error('Error toggling sticky:', error)
         }
     }
 
@@ -252,6 +263,20 @@ export function TrackerCard({ tracker, onEdit, onCopy }: { tracker: Tracker; onE
                                 <Copy size={14} />
                             </button>
                         )}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSticky();
+                            }}
+                            className={cn(
+                                "p-2 rounded-full transition-all flex items-center justify-center border",
+                                tracker.is_sticky
+                                    ? "bg-orange-500/20 text-orange-400 border-orange-500/40 hover:bg-orange-500/30"
+                                    : "bg-white/5 text-muted-foreground border-white/10 hover:text-white hover:bg-white/10"
+                            )}
+                        >
+                            <Pin size={14} className={cn("transition-transform", tracker.is_sticky && "rotate-45 fill-current")} />
+                        </button>
                         {onEdit && (
                             <button
                                 onClick={(e) => {

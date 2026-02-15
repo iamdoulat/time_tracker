@@ -14,6 +14,7 @@ type Tracker = {
     target_timestamp: string
     status: string
     created_at: string
+    is_sticky?: boolean
 }
 
 export const TABS = ['all', 'not started', 'progress', 'available'] as const
@@ -76,7 +77,14 @@ export function TrackerList({
     }, [initialTrackers, filter, currentTime, searchQuery])
 
     const sortedTrackers = useMemo(() => {
-        return [...filteredTrackers].sort((a, b) => new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime())
+        return [...filteredTrackers].sort((a, b) => {
+            // Priority 1: Sticky cards
+            if (a.is_sticky && !b.is_sticky) return -1;
+            if (!a.is_sticky && b.is_sticky) return 1;
+
+            // Priority 2: Original time-based sort
+            return new Date(a.target_timestamp).getTime() - new Date(b.target_timestamp).getTime();
+        })
     }, [filteredTrackers])
 
     const displayedTrackers = useMemo(() => {
