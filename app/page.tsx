@@ -214,8 +214,8 @@ export default function Home() {
               </div>
 
               {/* Statistics Chart (Scrolls away) */}
-              {!searchQuery && (
-                <div className="mt-4 mb-2">
+              {!searchQuery.trim() && (
+                <div className="mt-4 mb-2 w-full">
                   <StatisticsChart trackers={trackers} />
                 </div>
               )}

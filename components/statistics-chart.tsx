@@ -17,8 +17,6 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
         const today = new Date(now.setHours(0, 0, 0, 0))
         const tomorrow = new Date(today)
         tomorrow.setDate(tomorrow.getDate() + 1)
-        const dayAfterTomorrow = new Date(tomorrow)
-        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1)
         const nextWeek = new Date(today)
         nextWeek.setDate(nextWeek.getDate() + 7)
 
@@ -42,7 +40,7 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
                 distribution.tomorrow++
             } else if (checkDate > tomorrow.getTime() && checkDate <= nextWeek.getTime()) {
                 distribution.week++
-            } else if (checkDate > nextWeek.getTime()) {
+            } else {
                 distribution.later++
             }
         })
@@ -52,7 +50,7 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
     }, [trackers])
 
     const dataPoints = [
-        { label: 'Late', value: stats.data.overdue, color: '#f43f5e' }, // Rose/Red
+        { label: 'Late', value: stats.data.overdue, color: '#f43f5e' },
         { label: 'Tdy', value: stats.data.today, color: '#f43f5e' },
         { label: 'Tmw', value: stats.data.tomorrow, color: '#f43f5e' },
         { label: 'Wk', value: stats.data.week, color: '#f43f5e' },
@@ -60,52 +58,40 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
     ]
 
     return (
-        <div className="bg-[#121214] border border-white/5 rounded-3xl p-6 mb-6 shadow-2xl relative overflow-hidden">
+        <div className="bg-card dark:bg-[#121214] border-2 border-black dark:border-white/5 rounded-3xl p-6 mb-6 shadow-xl relative overflow-hidden transition-colors">
             <div className="flex justify-between items-center mb-10">
-                <h2 className="text-sm font-medium text-muted-foreground/60 uppercase tracking-widest">Overview</h2>
-                <div className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
+                <h2 className="text-sm font-bold text-black dark:text-muted-foreground/60 uppercase tracking-widest">Overview</h2>
+                <div className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-black dark:text-white uppercase tracking-wider">
                     {trackers.length} Total
                 </div>
             </div>
 
             <div className="flex items-end justify-between relative h-32 px-2">
-                {/* Horizontal Baseline */}
-                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5" />
+                {/* Baseline */}
+                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-black dark:bg-white/5" />
 
                 {dataPoints.map((point, index) => {
                     const heightPercent = (point.value / stats.max) * 100
-                    const peakHeight = Math.max(5, (heightPercent / 100) * 80) // 80 is container height limit
+                    const peakHeight = Math.max(5, (heightPercent / 100) * 80)
 
                     return (
                         <div key={point.label} className="flex flex-col items-center gap-4 flex-1 group">
                             <div className="relative w-full h-24 flex items-end justify-center">
-                                {/* Value Label on top of curve */}
                                 {point.value > 0 && (
                                     <motion.span
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="absolute -top-6 text-[10px] font-bold text-rose-500 font-mono"
+                                        className="absolute -top-6 text-[11px] font-black text-rose-600 dark:text-rose-500 font-mono"
                                     >
                                         {point.value}
                                     </motion.span>
                                 )}
 
-                                {/* Dynamic Wave (Bell Curve) */}
-                                <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                    <defs>
-                                        <filter id={`glow-${index}`}>
-                                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                                            <feMerge>
-                                                <feMergeNode in="coloredBlur" />
-                                                <feMergeNode in="SourceGraphic" />
-                                            </feMerge>
-                                        </filter>
-                                    </defs>
-
+                                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                                     <motion.path
                                         initial={{ d: "M 0 100 Q 50 100 100 100" }}
                                         animate={{
-                                            d: `M -10 100 Q 50 ${100 - peakHeight} 110 100`
+                                            d: `M 0 100 Q 50 ${100 - peakHeight} 100 100`
                                         }}
                                         transition={{
                                             type: "spring",
@@ -115,17 +101,15 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
                                         }}
                                         fill="none"
                                         stroke={point.color}
-                                        strokeWidth="3"
+                                        strokeWidth="4"
                                         strokeLinecap="round"
-                                        filter={`url(#glow-${index})`}
-                                        className="opacity-80 group-hover:opacity-100 transition-opacity"
+                                        className="opacity-90 dark:opacity-80 group-hover:opacity-100 transition-opacity"
                                     />
 
-                                    {/* Fill Gradient (Subtle) */}
                                     <motion.path
                                         initial={{ opacity: 0 }}
                                         animate={{
-                                            d: `M -10 100 Q 50 ${100 - peakHeight} 110 100 L 110 100 L -10 100 Z`,
+                                            d: `M 0 100 Q 50 ${100 - peakHeight} 100 100 L 100 100 L 0 100 Z`,
                                             opacity: 0.1
                                         }}
                                         fill={point.color}
@@ -134,8 +118,7 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
                                 </svg>
                             </div>
 
-                            {/* Label */}
-                            <span className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] pt-2">
+                            <span className="text-[10px] text-black font-black uppercase tracking-[0.2em] pt-2 dark:text-muted-foreground/40">
                                 {point.label}
                             </span>
                         </div>

@@ -215,25 +215,25 @@ export const TrackerCard = memo(function TrackerCard({
 
             <div className="flex justify-between items-start mb-6 relative z-10 gap-4">
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-foreground dark:text-foreground mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
+                    <h3 className="text-lg font-bold text-black dark:text-foreground mb-1 group-hover:text-primary transition-colors truncate">{tracker.title}</h3>
                     {tracker.description && (
-                        <div className="inline-block px-2 py-0.5 rounded-md bg-green-500/20 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/40 dark:border-green-500/20 text-xs font-semibold mb-2">
+                        <div className="inline-block px-2 py-0.5 rounded-md bg-white dark:bg-green-500/10 text-black dark:text-green-400 border border-black dark:border-green-500/20 text-xs font-bold mb-2 shadow-sm">
                             {tracker.description}
                         </div>
                     )}
-                    <p className="text-xs text-gray-600 dark:text-muted-foreground flex items-center gap-1">
-                        <Clock size={12} className="text-gray-500 dark:text-muted-foreground" />
+                    <p className="text-xs text-black/80 dark:text-muted-foreground flex items-center gap-1">
+                        <Clock size={12} className="text-black/60 dark:text-muted-foreground" />
                         {format(target, 'MMM d, h:mm a')}
                     </p>
                 </div>
                 <div className="flex-shrink-0 flex flex-col items-end gap-2">
                     <div className={cn(
-                        "px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold border backdrop-blur-md",
+                        "px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-extrabold border backdrop-blur-md transition-colors shadow-sm",
                         isAvailable
-                            ? "bg-green-500/20 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/40 dark:border-green-500/20 shadow-[0_0_10px_-4px_rgba(74,222,128,0.5)]"
+                            ? "bg-white dark:bg-green-500/10 text-black dark:text-green-400 border-black dark:border-green-500/20"
                             : (tracker.status === 'Not Started'
-                                ? "bg-gray-500/20 dark:bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/40 dark:border-gray-500/20"
-                                : "bg-blue-500/20 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/40 dark:border-blue-500/20")
+                                ? "bg-white dark:bg-gray-500/10 text-black dark:text-gray-400 border-black dark:border-gray-500/20"
+                                : "bg-white dark:bg-blue-500/10 text-black dark:text-blue-400 border-black dark:border-blue-500/20")
                     )}>
                         {isAvailable ? 'Available' : (tracker.status === 'Not Started' ? 'Not Started' : 'Progress')}
                     </div>
@@ -305,11 +305,11 @@ export const TrackerCard = memo(function TrackerCard({
 
             <div className="flex items-center gap-4 relative z-10">
                 {isAvailable ? (
-                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 w-full p-2 bg-green-500/10 dark:bg-green-500/5 rounded-xl border border-green-500/30 dark:border-green-500/10">
-                        <div className="h-8 w-8 rounded-full bg-green-500/30 dark:bg-green-500/20 flex items-center justify-center">
+                    <div className="flex items-center gap-2 text-black dark:text-green-400 w-full p-2 bg-white dark:bg-green-500/5 rounded-xl border-2 border-black dark:border-green-500/10 shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-black dark:bg-green-500/20 flex items-center justify-center text-white dark:text-green-400 shrink-0">
                             <CheckCircle2 size={16} />
                         </div>
-                        <span className="font-semibold text-sm">Ready to Claim</span>
+                        <span className="font-extrabold text-sm uppercase tracking-tight">Ready to Claim</span>
                     </div>
                 ) : (
                     <div className="flex items-center gap-3 w-full">
@@ -322,10 +322,10 @@ export const TrackerCard = memo(function TrackerCard({
                         </div>
                         <div className="flex-1">
                             <div className="flex justify-between items-end mb-1">
-                                <p className="text-[10px] text-gray-600 dark:text-muted-foreground uppercase tracking-widest">Time Left</p>
+                                <p className="text-[10px] text-black/60 dark:text-muted-foreground uppercase tracking-widest">Time Left</p>
                                 <p className="text-[10px] text-primary/90 dark:text-primary/80 font-mono">{Math.floor(progress)}%</p>
                             </div>
-                            <p className="text-2xl font-mono text-gray-900 dark:text-foreground tracking-widest leading-none font-bold tabular-nums">
+                            <p className="text-2xl font-mono text-black dark:text-foreground tracking-widest leading-none font-bold tabular-nums">
                                 {timeLeft}
                             </p>
                         </div>

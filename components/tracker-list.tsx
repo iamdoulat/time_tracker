@@ -146,7 +146,7 @@ export function TrackerList({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
-                        className="mx-auto mt-4 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-muted-foreground hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                        className="mx-auto mt-4 px-6 py-2 rounded-full bg-transparent border-2 border-black text-black dark:bg-white/5 dark:border-white/10 dark:text-muted-foreground dark:hover:text-white dark:hover:bg-white/10 hover:bg-black/10 transition-colors flex items-center gap-2 text-sm font-bold shadow-sm"
                     >
                         Load More <ChevronDown size={14} />
                     </motion.button>
