@@ -16,11 +16,25 @@ type Tracker = {
     created_at: string
 }
 
-const TABS = ['all', 'not started', 'progress', 'available'] as const
+export const TABS = ['all', 'not started', 'progress', 'available'] as const
+export type TabType = typeof TABS[number]
 const ITEMS_PER_PAGE = 10
 
-export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' }: { initialTrackers: any[]; onEdit: (tracker: any) => void; onCopy: (tracker: any) => void; searchQuery?: string }) {
-    const [filter, setFilter] = useState<typeof TABS[number]>('all')
+export function TrackerList({
+    initialTrackers,
+    onEdit,
+    onCopy,
+    searchQuery = '',
+    filter,
+    setFilter
+}: {
+    initialTrackers: any[];
+    onEdit: (tracker: any) => void;
+    onCopy: (tracker: any) => void;
+    searchQuery?: string;
+    filter: TabType;
+    setFilter: (filter: TabType) => void;
+}) {
     const [currentTime, setCurrentTime] = useState(new Date())
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
 
@@ -88,27 +102,6 @@ export function TrackerList({ initialTrackers, onEdit, onCopy, searchQuery = '' 
 
     return (
         <div className="flex flex-col gap-6">
-            <div className="flex p-1 bg-card rounded-xl border border-border sticky top-0 z-40 backdrop-blur-md shadow-sm transition-colors">
-                {TABS.map((f) => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className={cn(
-                            "flex-1 py-2 text-sm font-medium rounded-lg transition-all capitalize relative z-10",
-                            filter === f ? "text-black" : "text-muted-foreground hover:text-white"
-                        )}
-                    >
-                        {filter === f && (
-                            <motion.div
-                                layoutId="activeTab"
-                                className="absolute inset-0 bg-white rounded-lg -z-10 shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                        )}
-                        {f}
-                    </button>
-                ))}
-            </div>
 
             <motion.div
                 className="flex flex-col gap-4 pb-24 min-h-[50vh]"

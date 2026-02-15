@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { TrackerList } from '../components/tracker-list'
+import { TrackerList, TABS, TabType } from '../components/tracker-list'
 import { TrackerModal } from '../components/tracker-form'
 import { ProfileModal } from '../components/profile-modal'
 import { StatisticsChart } from '../components/statistics-chart'
@@ -27,6 +27,7 @@ export default function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState<TabType>('all')
   const { theme, toggleTheme } = useTheme()
   const router = useRouter()
 
@@ -117,100 +118,140 @@ export default function Home() {
           >
             <main className="min-h-screen pb-20 px-3 sm:px-4 max-w-md mx-auto relative mobile-px-safe">
               {/* Header */}
-              <header className="flex justify-between items-center mb-4 sm:mb-6 pt-3 sm:pt-4 relative gap-2">
-                {!isSearchOpen ? (
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient truncate">
-                      AI Credit Tracker
-                    </h1>
-                    <div
-                      onClick={() => setIsProfileOpen(true)}
-                      className="flex items-center gap-2 mt-1 cursor-pointer group w-fit max-w-full"
-                    >
-                      <div className="h-6 w-6 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-md group-hover:scale-110 transition-transform">
-                        {(user.displayName || user.email || '?')[0].toUpperCase()}
+              {/* Sticky Header */}
+              <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md pt-3 sm:pt-4 pb-2 px-1">
+                <header className="flex justify-between items-center gap-2">
+                  {!isSearchOpen ? (
+                    <div className="flex-1 min-w-0">
+                      <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient truncate">
+                        AI Credit Tracker
+                      </h1>
+                      <div
+                        onClick={() => setIsProfileOpen(true)}
+                        className="flex items-center gap-2 mt-1 cursor-pointer group w-fit max-w-full"
+                      >
+                        <div className="h-6 w-6 flex-shrink-0 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-xs font-bold text-white shadow-md group-hover:scale-110 transition-transform">
+                          {(user.displayName || user.email || '?')[0].toUpperCase()}
+                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground group-hover:text-primary transition-colors truncate">
+                          {user.displayName || user.email}
+                        </p>
                       </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground group-hover:text-primary transition-colors truncate">
-                        {user.displayName || user.email}
-                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 relative animate-in fade-in slide-in-from-right-4 duration-200">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input
-                      autoFocus
-                      type="text"
-                      placeholder="Search trackers..."
-                      className="w-full h-10 bg-card border border-border rounded-full pl-9 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-foreground"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex-1 relative animate-in fade-in slide-in-from-right-4 duration-200">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        autoFocus
+                        type="text"
+                        placeholder="Search trackers..."
+                        className="w-full h-10 bg-card border border-border rounded-full pl-9 pr-4 text-sm focus:outline-none focus:border-primary/50 transition-all text-foreground"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+                  )}
 
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  {!isSearchOpen && (
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    {!isSearchOpen && (
+                      <button
+                        onClick={() => {
+                          setIsRefreshing(true)
+                          window.location.reload()
+                        }}
+                        className="p-2 sm:p-2.5 bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-full transition-all flex-shrink-0 flex items-center justify-center"
+                        aria-label="Refresh page"
+                        disabled={isRefreshing}
+                      >
+                        <RefreshCw size={18} className={cn("sm:w-5 sm:h-5", isRefreshing && "animate-spin")} />
+                      </button>
+                    )}
+
                     <button
                       onClick={() => {
-                        setIsRefreshing(true)
-                        window.location.reload()
+                        if (isSearchOpen) {
+                          setSearchQuery('')
+                          setIsSearchOpen(false)
+                        } else {
+                          setIsSearchOpen(true)
+                        }
                       }}
-                      className="p-2 sm:p-2.5 bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-full transition-all flex-shrink-0 flex items-center justify-center"
-                      aria-label="Refresh page"
-                      disabled={isRefreshing}
+                      className={cn(
+                        "p-2 sm:p-2.5 rounded-full transition-all flex-shrink-0 flex items-center justify-center",
+                        isSearchOpen
+                          ? "bg-center bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
+                          : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border"
+                      )}
+                      aria-label={isSearchOpen ? "Close search" : "Open search"}
                     >
-                      <RefreshCw size={18} className={cn("sm:w-5 sm:h-5", isRefreshing && "animate-spin")} />
+                      {isSearchOpen ? <X size={18} className="sm:w-5 sm:h-5" /> : <Search size={18} className="sm:w-5 sm:h-5" />}
                     </button>
-                  )}
 
-                  <button
-                    onClick={() => {
-                      if (isSearchOpen) {
-                        setSearchQuery('')
-                        setIsSearchOpen(false)
-                      } else {
-                        setIsSearchOpen(true)
-                      }
-                    }}
-                    className={cn(
-                      "p-2 sm:p-2.5 rounded-full transition-all flex-shrink-0 flex items-center justify-center",
-                      isSearchOpen
-                        ? "bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20"
-                        : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border"
+                    {!isSearchOpen && (
+                      <button
+                        onClick={toggleTheme}
+                        className="p-2 sm:p-2.5 bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-full transition-all flex-shrink-0 flex items-center justify-center"
+                        aria-label="Toggle theme"
+                      >
+                        {theme === 'dark' ? <Sun size={18} className="sm:w-5 sm:h-5" /> : <Moon size={18} className="sm:w-5 sm:h-5" />}
+                      </button>
                     )}
-                    aria-label={isSearchOpen ? "Close search" : "Open search"}
-                  >
-                    {isSearchOpen ? <X size={18} className="sm:w-5 sm:h-5" /> : <Search size={18} className="sm:w-5 sm:h-5" />}
-                  </button>
 
-                  {!isSearchOpen && (
-                    <button
-                      onClick={toggleTheme}
-                      className="p-2 sm:p-2.5 bg-card text-muted-foreground hover:text-foreground hover:bg-muted border border-border rounded-full transition-all flex-shrink-0 flex items-center justify-center"
-                      aria-label="Toggle theme"
-                    >
-                      {theme === 'dark' ? <Sun size={18} className="sm:w-5 sm:h-5" /> : <Moon size={18} className="sm:w-5 sm:h-5" />}
-                    </button>
-                  )}
+                    {!isSearchOpen && (
+                      <button
+                        onClick={handleLogout}
+                        className="p-2 sm:p-2.5 bg-card text-muted-foreground border border-border hover:bg-muted rounded-full transition-all flex-shrink-0 flex items-center justify-center"
+                        aria-label="Logout"
+                      >
+                        <LogOut size={18} className="sm:w-5 sm:h-5" />
+                      </button>
+                    )}
+                  </div>
+                </header>
+              </div>
 
-                  {!isSearchOpen && (
-                    <button
-                      onClick={handleLogout}
-                      className="p-2 sm:p-2.5 bg-card text-muted-foreground border border-border hover:bg-muted rounded-full transition-all flex-shrink-0 flex items-center justify-center"
-                      aria-label="Logout"
-                    >
-                      <LogOut size={18} className="sm:w-5 sm:h-5" />
-                    </button>
-                  )}
+              {/* Statistics Chart (Scrolls away) */}
+              {!searchQuery && (
+                <div className="mt-4 mb-2">
+                  <StatisticsChart trackers={trackers} />
                 </div>
-              </header>
+              )}
 
-              {/* Statistics Chart */}
-              {!searchQuery && <StatisticsChart trackers={trackers} />}
+              {/* Sticky Tabs (Pins below header) */}
+              <div className="sticky top-[72px] sm:top-[84px] z-40 bg-background/80 backdrop-blur-md py-2 px-1 mb-4">
+                <div className="flex p-1 bg-card rounded-xl border border-border shadow-sm transition-colors">
+                  {(TABS || []).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setFilter(f)}
+                      className={cn(
+                        "flex-1 py-2 text-sm font-medium rounded-lg transition-all capitalize relative z-10",
+                        filter === f ? "text-black" : "text-muted-foreground hover:text-white"
+                      )}
+                    >
+                      {filter === f && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-white rounded-lg -z-10 shadow-sm"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
 
               {/* Tracker List */}
-              <TrackerList initialTrackers={trackers} onEdit={handleEdit} onCopy={handleCopy} searchQuery={searchQuery} />
+              <TrackerList
+                initialTrackers={trackers}
+                onEdit={handleEdit}
+                onCopy={handleCopy}
+                searchQuery={searchQuery}
+                filter={filter}
+                setFilter={setFilter}
+              />
 
               {/* Floating Action Button */}
               <div className="fixed bottom-6 right-4 sm:right-6 z-40">
