@@ -17,6 +17,8 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
         const today = new Date(now.setHours(0, 0, 0, 0))
         const tomorrow = new Date(today)
         tomorrow.setDate(tomorrow.getDate() + 1)
+        const dayAfterTomorrow = new Date(tomorrow)
+        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1)
         const nextWeek = new Date(today)
         nextWeek.setDate(nextWeek.getDate() + 7)
 
@@ -30,7 +32,6 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
 
         trackers.forEach(t => {
             const date = new Date(t.target_timestamp)
-            // Reset time for date comparison
             const checkDate = new Date(date).setHours(0, 0, 0, 0)
 
             if (checkDate < today.getTime()) {
@@ -39,59 +40,107 @@ export function StatisticsChart({ trackers }: { trackers: Tracker[] }) {
                 distribution.today++
             } else if (checkDate === tomorrow.getTime()) {
                 distribution.tomorrow++
-            } else if (checkDate <= nextWeek.getTime()) {
+            } else if (checkDate > tomorrow.getTime() && checkDate <= nextWeek.getTime()) {
                 distribution.week++
-            } else {
+            } else if (checkDate > nextWeek.getTime()) {
                 distribution.later++
             }
         })
 
-        const max = Math.max(...Object.values(distribution), 1) // Avoid division by zero
-
+        const max = Math.max(...Object.values(distribution), 1)
         return { data: distribution, max }
     }, [trackers])
 
-    const bars = [
-        { label: 'Overdue', value: stats.data.overdue, color: 'bg-red-500', labelShort: 'Late' },
-        { label: 'Today', value: stats.data.today, color: 'bg-green-500', labelShort: 'Tdy' },
-        { label: 'Tmrrw', value: stats.data.tomorrow, color: 'bg-blue-500', labelShort: 'Tmw' },
-        { label: 'Week', value: stats.data.week, color: 'bg-yellow-500', labelShort: 'Wk' },
-        { label: 'Later', value: stats.data.later, color: 'bg-purple-500', labelShort: 'Ltr' },
+    const dataPoints = [
+        { label: 'Late', value: stats.data.overdue, color: '#f43f5e' }, // Rose/Red
+        { label: 'Tdy', value: stats.data.today, color: '#f43f5e' },
+        { label: 'Tmw', value: stats.data.tomorrow, color: '#f43f5e' },
+        { label: 'Wk', value: stats.data.week, color: '#f43f5e' },
+        { label: 'Ltr', value: stats.data.later, color: '#f43f5e' },
     ]
 
     return (
-        <div className="bg-card border border-border rounded-2xl p-4 mb-6 backdrop-blur-sm shadow-sm transition-colors">
-            <h2 className="text-sm font-medium text-muted-foreground mb-4 flex justify-between items-center">
-                <span>Overview</span>
-                <span className="text-xs bg-muted border border-border px-2 py-1 rounded-full text-foreground transition-colors">{trackers.length} Total</span>
-            </h2>
+        <div className="bg-[#121214] border border-white/5 rounded-3xl p-6 mb-6 shadow-2xl relative overflow-hidden">
+            <div className="flex justify-between items-center mb-10">
+                <h2 className="text-sm font-medium text-muted-foreground/60 uppercase tracking-widest">Overview</h2>
+                <div className="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-wider">
+                    {trackers.length} Total
+                </div>
+            </div>
 
-            <div className="flex items-end justify-between gap-2 h-32">
-                {bars.map((bar, index) => (
-                    <div key={bar.label} className="flex flex-col items-center gap-2 flex-1 group relative">
+            <div className="flex items-end justify-between relative h-32 px-2">
+                {/* Horizontal Baseline */}
+                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/5" />
 
-                        {/* Tooltip */}
-                        <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10 pointer-events-none">
-                            {bar.label}: {bar.value}
-                        </div>
+                {dataPoints.map((point, index) => {
+                    const heightPercent = (point.value / stats.max) * 100
+                    const peakHeight = Math.max(5, (heightPercent / 100) * 80) // 80 is container height limit
 
-                        {/* Bar */}
-                        <div className="w-full bg-muted border-x border-t border-border rounded-t-lg h-full relative overflow-hidden flex items-end transition-colors">
-                            <motion.div
-                                initial={{ height: 0 }}
-                                animate={{ height: `${(bar.value / stats.max) * 100}%` }}
-                                transition={{ type: "spring", stiffness: 100, damping: 20, delay: index * 0.1 }}
-                                className={cn(
-                                    "w-full rounded-t-lg transition-colors opacity-80 group-hover:opacity-100",
-                                    bar.value === 0 ? "min-h-[2px] bg-white/10" : bar.color
+                    return (
+                        <div key={point.label} className="flex flex-col items-center gap-4 flex-1 group">
+                            <div className="relative w-full h-24 flex items-end justify-center">
+                                {/* Value Label on top of curve */}
+                                {point.value > 0 && (
+                                    <motion.span
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="absolute -top-6 text-[10px] font-bold text-rose-500 font-mono"
+                                    >
+                                        {point.value}
+                                    </motion.span>
                                 )}
-                            />
-                        </div>
 
-                        {/* Label */}
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{bar.labelShort}</span>
-                    </div>
-                ))}
+                                {/* Dynamic Wave (Bell Curve) */}
+                                <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <defs>
+                                        <filter id={`glow-${index}`}>
+                                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                            <feMerge>
+                                                <feMergeNode in="coloredBlur" />
+                                                <feMergeNode in="SourceGraphic" />
+                                            </feMerge>
+                                        </filter>
+                                    </defs>
+
+                                    <motion.path
+                                        initial={{ d: "M 0 100 Q 50 100 100 100" }}
+                                        animate={{
+                                            d: `M -10 100 Q 50 ${100 - peakHeight} 110 100`
+                                        }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 80,
+                                            damping: 15,
+                                            delay: index * 0.1
+                                        }}
+                                        fill="none"
+                                        stroke={point.color}
+                                        strokeWidth="3"
+                                        strokeLinecap="round"
+                                        filter={`url(#glow-${index})`}
+                                        className="opacity-80 group-hover:opacity-100 transition-opacity"
+                                    />
+
+                                    {/* Fill Gradient (Subtle) */}
+                                    <motion.path
+                                        initial={{ opacity: 0 }}
+                                        animate={{
+                                            d: `M -10 100 Q 50 ${100 - peakHeight} 110 100 L 110 100 L -10 100 Z`,
+                                            opacity: 0.1
+                                        }}
+                                        fill={point.color}
+                                        className="pointer-events-none"
+                                    />
+                                </svg>
+                            </div>
+
+                            {/* Label */}
+                            <span className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] pt-2">
+                                {point.label}
+                            </span>
+                        </div>
+                    )
+                })}
             </div>
         </div>
     )
